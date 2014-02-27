@@ -52,7 +52,7 @@ namespace KinectImageProcess
             screenWidth = this.Width;
             PNGPlayerElement.Height = screenHeight;
             PNGPlayerElement.Width = screenWidth;
-            ImagePlayer ip = new ImagePlayer(this, "smoke_alpha", "smoke_alpha", 100, 50);
+            ImagePlayer ip = new ImagePlayer(this, "smoke_alpha", "smoke_alpha", 100, 50, 50,PNGPlayerElement);
             ip.Play();
         }
 

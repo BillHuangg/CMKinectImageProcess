@@ -25,7 +25,7 @@ namespace KinectImageProcess
     {
         private Timer parentTimer;
         delegate void UpdateTimer();
-        private int intervalTime = 3000;    //3s 
+        private int intervalTime = 10000;    //3s 
 
         private MainWindow _windowUI;
 
@@ -37,6 +37,7 @@ namespace KinectImageProcess
         //private DepthImageFrame _depthFrame;
         //private ColorImageFrame _colorFrame;
         //
+
 
         private int depthFrameWidth;
         private int depthFrameHeight;
@@ -52,11 +53,13 @@ namespace KinectImageProcess
 
         private int BytesPerPixel = 4;
 
-        public ColorImageProcesser(MainWindow window, KinectSensor kinectDevice, 
-            int depthDataLength, int colorDataLength, 
-            int dWidht, int dHeight, 
+        private int VideoShotCount = 0;
+
+        public ColorImageProcesser(MainWindow window, KinectSensor kinectDevice,
+            int depthDataLength, int colorDataLength,
+            int dWidht, int dHeight,
             int cWidth, int cHeight,
-            DepthImageFormat dImageFormat,ColorImageFormat cImageFormat)
+            DepthImageFormat dImageFormat, ColorImageFormat cImageFormat)
         {
             _windowUI = window;
             _kinectDevice = kinectDevice;
@@ -101,6 +104,7 @@ namespace KinectImageProcess
 
         private void Update()
         {
+            
             SetImageShot(_kinectDevice);//, _colorFrame, _depthFrame);
         }
 
@@ -108,9 +112,9 @@ namespace KinectImageProcess
         {
             if (kinectDevice != null)// && depthFrame != null && colorFrame != null)
             {
-                int depthPixelIndex=0;
-                int playerIndex=0;
-                int colorPixelIndex=0;
+                int depthPixelIndex = 0;
+                int playerIndex = 0;
+                int colorPixelIndex = 0;
                 ColorImagePoint colorPoint;
                 byte[] playerImage = new byte[depthFrameHeight * depthFrameStride];
                 int playerImageIndex = 0;
@@ -129,15 +133,15 @@ namespace KinectImageProcess
 
                             //
                             isSomeoneHere = true;
-
+                            break;
                             //
-                            colorPoint = kinectDevice.MapDepthToColorImagePoint(depthImageFormat, depthX, depthY, this.depthPixelData[depthPixelIndex], colorImageFormat);
-                            colorPixelIndex = (colorPoint.X * BytesPerPixel) + (colorPoint.Y * colorFrameStride);
+                            //colorPoint = kinectDevice.MapDepthToColorImagePoint(depthImageFormat, depthX, depthY, this.depthPixelData[depthPixelIndex], colorImageFormat);
+                            //colorPixelIndex = (colorPoint.X * BytesPerPixel) + (colorPoint.Y * colorFrameStride);
 
-                            playerImage[playerImageIndex] = colorPixelData[colorPixelIndex];         //Blue    
-                            playerImage[playerImageIndex + 1] = colorPixelData[colorPixelIndex + 1];     //Green
-                            playerImage[playerImageIndex + 2] = colorPixelData[colorPixelIndex + 2];     //Red
-                            playerImage[playerImageIndex + 3] = 0xFF;                                          //Alpha
+                            //playerImage[playerImageIndex] = colorPixelData[colorPixelIndex];         //Blue    
+                            //playerImage[playerImageIndex + 1] = colorPixelData[colorPixelIndex + 1];     //Green
+                            //playerImage[playerImageIndex + 2] = colorPixelData[colorPixelIndex + 2];     //Red
+                            //playerImage[playerImageIndex + 3] = 0xFF;                                          //Alpha
                         }
                     }
                 }
@@ -145,17 +149,24 @@ namespace KinectImageProcess
                 //
                 if (isSomeoneHere)
                 {
-                    Image temp = new Image();
-                    temp.Stretch = Stretch.Fill;
-                    temp.Height = 120;
-                    temp.Width = 160;
-                    
-                    temp.Source = BitmapImage.Create(colorFrameWidth, colorFrameHeight, 96, 96,
-                                                             PixelFormats.Bgra32, null, playerImage,
-                                                             colorFrameStride);
-                    Canvas.SetTop(temp, 600);
-                    Canvas.SetLeft(temp, (_windowUI.ImageLayer.Children.Count - 1) * 170);
-                    _windowUI.ImageLayer.Children.Add(temp);
+                    VideoShotCount++;
+                    VideoShot videoShot = new VideoShot(this, _windowUI, VideoShotCount,
+                        _kinectDevice,
+                    depthFrameWidth, depthFrameHeight,
+                    colorFrameWidth, colorFrameHeight,
+                    depthImageFormat, colorImageFormat);
+
+                    //Image temp = new Image();
+                    //temp.Stretch = Stretch.Fill;
+                    //temp.Height = 120;
+                    //temp.Width = 160;
+
+                    //temp.Source = BitmapImage.Create(colorFrameWidth, colorFrameHeight, 96, 96,
+                    //                                         PixelFormats.Bgra32, null, playerImage,
+                    //                                         colorFrameStride);
+                    //Canvas.SetTop(temp, 600);
+                    //Canvas.SetLeft(temp, (_windowUI.ImageLayer.Children.Count - 1) * 170);
+                    //_windowUI.ImageLayer.Children.Add(temp);
                 }
             }
         }
@@ -166,5 +177,21 @@ namespace KinectImageProcess
         }
 
 
+
+
+        public short[] DepthPixelData
+        {
+            get
+            {
+                return depthPixelData;
+            }
+        }
+        public byte[] ColorPixelData
+        {
+            get
+            {
+                return colorPixelData;
+            }
+        }
     }
 }

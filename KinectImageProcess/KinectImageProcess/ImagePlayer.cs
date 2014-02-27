@@ -31,7 +31,9 @@ namespace KinectImageProcess
         private int _startNum;
         private int _imageCount;
         private int currentImageNum;
-        public ImagePlayer(MainWindow window, string filePath, string fileName, int startNum, int imageCount)
+
+        private Image imagePlayerElement;
+        public ImagePlayer(MainWindow window, string filePath, string fileName, int startNum, int imageCount,int interval=50,Image imageElement=null)
         {
             _windowUI = window;
             _fileName = fileName;
@@ -39,6 +41,9 @@ namespace KinectImageProcess
             _startNum = startNum;
             _imageCount = imageCount;
             currentImageNum = startNum;
+            intervalTime = 50;
+
+            imagePlayerElement=imageElement;
         }
 
         public void Play()
@@ -59,10 +64,24 @@ namespace KinectImageProcess
 
         private void Update()
         {
-            Uri uri = new Uri(@"pack://siteoforigin:,,,/"+_filePath+"/"+_fileName+"_"+currentImageNum+".png", UriKind.RelativeOrAbsolute);
-            _windowUI.PNGPlayerElement.Source = new BitmapImage(uri);
-            currentImageNum++;
+            try
+            {
+                Uri uri = new Uri(@"pack://siteoforigin:,,,/" + _filePath + "/" + _fileName + "_" + PadLeft(currentImageNum) + ".png", UriKind.RelativeOrAbsolute);
 
+                //区分使用新建element或是预先于xaml设定好的
+                if (imagePlayerElement == null)
+                {
+                    _windowUI.PNGPlayerElement.Source = new BitmapImage(uri);
+                }
+                else
+                {
+                    imagePlayerElement.Source = new BitmapImage(uri);
+                }
+
+                currentImageNum++;
+            }
+            catch(Exception e)
+            {}
             //reset
             if (currentImageNum >= _imageCount+_startNum)
             {
@@ -74,5 +93,24 @@ namespace KinectImageProcess
             parentTimer.Dispose();
         }
 
+        private string PadLeft(int num)
+        {
+            string result = "";
+            if (num <= 9)
+            {
+                result = "00" + num;
+            }
+            else if (num > 9 && num <= 99)
+            {
+                result = "0" + num;
+            }
+            else if (num > 99 && num <= 999)
+            {
+                result = "" + num;
+            }
+            return result;
+
+
+        }
     }
 }

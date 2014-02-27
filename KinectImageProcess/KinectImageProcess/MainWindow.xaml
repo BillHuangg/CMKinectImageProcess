@@ -1,0 +1,13 @@
+﻿<Window x:Class="KinectImageProcess.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="900" Width="1440">
+    <Viewbox Stretch="Fill">
+        <Grid>
+            <Canvas Name="ImageLayer" Height="900" Width="1440" Background="Black">
+                <Image Height="240" HorizontalAlignment="Left" Margin="228,139,0,0" Name="GreenScreenImage" Stretch="Fill" VerticalAlignment="Top" Width="320" Canvas.Left="445" Canvas.Top="348" />
+            </Canvas>
+            <Image Name="PNGPlayerElement" Stretch="Fill" Height="768" Width="1024"></Image>
+        </Grid>
+    </Viewbox>
+</Window>

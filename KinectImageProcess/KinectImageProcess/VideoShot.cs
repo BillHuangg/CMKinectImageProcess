@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.IO;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -22,8 +23,9 @@ namespace KinectImageProcess
     {
         private Timer parentTimer;
         delegate void UpdateTimer();
-        private int intervalTime = 100;    //1秒截10帧, 
-        private int TotalFrameNum = 20;    //共截2s, 共20帧 
+        private static int intervalTime = 100;    //1秒截10帧, 
+        private static int shotSceond = 2;
+        private int TotalFrameNum = shotSceond*1000 / intervalTime;    //共截2s, 共20帧 
 
         private MainWindow _windowUI;
         private KinectSensor _kinectDevice;
@@ -74,10 +76,15 @@ namespace KinectImageProcess
 
             Start();
         }
+        ~VideoShot()
+        {
+            Stop();
+        }
         public void Start()
         {
             SetUpTimer();
         }
+
         private void SetUpTimer()
         {
             parentTimer = new Timer(new TimerCallback(OnTimedEvent));
@@ -104,12 +111,12 @@ namespace KinectImageProcess
                 temp.Height = 160;
                 temp.Width = 213;
 
-                Canvas.SetTop(temp, 600);
-                Canvas.SetLeft(temp, (_windowUI.ImageLayer.Children.Count - 1) * 170);
+                Canvas.SetTop(temp, 500);
+                Canvas.SetLeft(temp, (_windowUI.ImageLayer.Children.Count - 1) * 180);
 
 
                 _windowUI.ImageLayer.Children.Add(temp);
-                ImagePlayer ip = new ImagePlayer(_windowUI, "ImageScreenShot", videoName, 0, 20, 10, temp);
+                ImagePlayer ip = new ImagePlayer(_windowUI, "ImageScreenShot", videoName, 0, TotalFrameNum, intervalTime, temp);
                 ip.Play();
                 parentTimer.Dispose();
             }
@@ -172,14 +179,41 @@ namespace KinectImageProcess
 
             try
             {
-                //TODO: 提高效率
 
+                string fileName = "ImageScreenShot/" + videoName + "_" + PadLeft(currentFrame) + ".png";
+                //TODO: 提高效率
+                //1
                 System.Drawing.Bitmap b = new System.Drawing.Bitmap(640, 480);
                 var bits = b.LockBits(new System.Drawing.Rectangle(0, 0, 640, 480), System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 Marshal.Copy(enhPixelData, 0, bits.Scan0, 640 * 480 * 4);
                 b.UnlockBits(bits);
                 // save
-                b.Save("ImageScreenShot/" + videoName + "_" + PadLeft(currentFrame) + ".png", System.Drawing.Imaging.ImageFormat.Png);
+                b.Save(fileName, System.Drawing.Imaging.ImageFormat.Png);
+
+
+                //2
+                //System.IO.File.WriteAllBytes(fileName, enhPixelData);
+
+                //3
+                //FileStream pFileStream = null;
+                //pFileStream = new FileStream(fileName, FileMode.Create);
+
+                //pFileStream.Write(enhPixelData, 0, enhPixelData.Length);
+                //pFileStream.Close();
+
+                //4
+                //System.IO.Stream ms = new System.IO.MemoryStream(enhPixelData);
+                ////ms.Position = 0;
+                //System.Drawing.Image image = System.Drawing.Image.FromStream(ms, false);
+                //image.Save(fileName, System.Drawing.Imaging.ImageFormat.Png);
+                //ms.Close();
+
+                //5
+                //MemoryStream ms1 = new MemoryStream(enhPixelData);
+                //System.Drawing.Bitmap bm = (System.Drawing.Bitmap)System.Drawing.Image.FromStream(ms1);
+                
+                //ms1.Close();
+                //bm.Save(fileName, System.Drawing.Imaging.ImageFormat.Png);
             }
             catch (Exception e)
             {

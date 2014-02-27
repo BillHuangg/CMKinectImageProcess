@@ -45,7 +45,10 @@ namespace KinectImageProcess
 
             imagePlayerElement=imageElement;
         }
-
+        ~ImagePlayer()
+        {
+            parentTimer.Dispose();
+        }
         public void Play()
         {
             SetUpTimer();

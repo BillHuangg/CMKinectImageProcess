@@ -1,6 +1,5 @@
 Kinect App by WPF
-
-====================
+========
 
 An kinect image processing app 
 

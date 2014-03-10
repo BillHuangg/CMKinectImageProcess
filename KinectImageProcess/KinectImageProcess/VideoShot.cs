@@ -24,7 +24,7 @@ namespace KinectImageProcess
         private Timer parentTimer;
         delegate void UpdateTimer();
         private static int intervalTime = 100;    //1秒截10帧, 
-        private static int shotSceond = 2;
+        private static int shotSceond = 3;
         private int TotalFrameNum = shotSceond*1000 / intervalTime;    //共截2s, 共20帧 
 
         private MainWindow _windowUI;
@@ -50,6 +50,18 @@ namespace KinectImageProcess
 
         private int BytesPerPixel = 4;
 
+        private double screenHeight;
+        private double screenWidth;
+
+        //original 120*160
+        private double INIT_IMAGE_HEIGHT = 240;
+        private double INIT_IMAGE_WIDTH = 320;
+        private double IMAGE_HEIGHT_MARGIN;
+
+        private double heightAdjustValue;
+
+        private byte[] playerImage;
+
         public VideoShot(ColorImageProcesser processer, MainWindow window, int videoNum,
             KinectSensor kinectDevice,
             int dWidht, int dHeight,
@@ -74,6 +86,9 @@ namespace KinectImageProcess
             depthImageFormat = dImageFormat;
             colorImageFormat = cImageFormat;
 
+            screenHeight = SystemParameters.PrimaryScreenHeight;
+            screenWidth = SystemParameters.PrimaryScreenWidth;
+
             Start();
         }
         ~VideoShot()
@@ -82,7 +97,20 @@ namespace KinectImageProcess
         }
         public void Start()
         {
+            judgeScreenResolution();
             SetUpTimer();
+        }
+        private void judgeScreenResolution()
+        {
+            if (screenHeight == 1200)
+            {
+                IMAGE_HEIGHT_MARGIN = 120;
+            }
+            else
+            {
+                screenHeight = 800;
+                IMAGE_HEIGHT_MARGIN = 5;
+            }
         }
 
         private void SetUpTimer()
@@ -103,22 +131,26 @@ namespace KinectImageProcess
             //帧数完整后即创建 ImagePlayer,并播放
             if (currentFrame > TotalFrameNum - 1)
             {
-                ///set image player
-                Image temp = new Image();
-                temp.Stretch = Stretch.Fill;
-
-
-                temp.Height = 160;
-                temp.Width = 213;
-
-                Canvas.SetTop(temp, 500);
-                Canvas.SetLeft(temp, (_windowUI.ImageLayer.Children.Count - 1) * 180);
-
-
-                _windowUI.ImageLayer.Children.Add(temp);
-                ImagePlayer ip = new ImagePlayer(_windowUI, "ImageScreenShot", videoName, 0, TotalFrameNum, intervalTime, temp);
-                ip.Play();
-                parentTimer.Dispose();
+                if (_windowUI.ImageLayer.Children.Count <= 10)
+                {
+                    generateImageOnRow(1.3,3.5,1,170,4);
+                }
+                else if (_windowUI.ImageLayer.Children.Count <= 18)
+                {
+                    generateImageOnRow(0.8, 10, 9, 160, 3);
+                }
+                else if (_windowUI.ImageLayer.Children.Count <= 26)
+                {
+                    generateImageOnRow(0.6, 20, 17, 150, 2);
+                }
+                else if (_windowUI.ImageLayer.Children.Count <= 33)
+                {
+                    generateImageOnRow(0.45, 30, 24, 140, 1);
+                }
+                else if (_windowUI.ImageLayer.Children.Count <= 39)
+                {
+                    generateImageOnRow(0.45, 40, 30, 130, 0);
+                }
             }
             //
             else
@@ -127,6 +159,38 @@ namespace KinectImageProcess
                 SetImageShot(_kinectDevice, parentProcesser.DepthPixelData, parentProcesser.ColorPixelData);//, _colorFrame, _depthFrame);
                 currentFrame++;
             }
+        }
+
+        private void generateImageOnRow(double imageOriginalScale,double imageHeightMargin,System.Int32 startCount,
+            double imageGap, int zIndex)
+        {
+            Image temp = generateImageSource(INIT_IMAGE_HEIGHT * imageOriginalScale, INIT_IMAGE_WIDTH * imageOriginalScale);
+            Canvas.SetTop(temp, screenHeight - IMAGE_HEIGHT_MARGIN * imageHeightMargin + (double)generateHeightAdjustValue());
+            Canvas.SetLeft(temp, ((_windowUI.ImageLayer.Children.Count - startCount)) * imageGap);
+            Canvas.SetZIndex(temp, zIndex);
+            _windowUI.ImageLayer.Children.Add(temp);
+            ImagePlayer ip = new ImagePlayer(_windowUI, "ImageScreenShot", videoName, 0, TotalFrameNum, true, 0.25f, intervalTime, temp);
+            ip.Play();
+            parentTimer.Dispose();
+        }
+
+        private Image generateImageSource(double imageHeight, double imageWidth)
+        {
+            Image temp = new Image();
+            temp.Stretch = Stretch.Fill;
+            temp.Height = imageHeight;
+            temp.Width = imageWidth;
+            //temp.Source = BitmapImage.Create(colorFrameWidth, colorFrameHeight, 96, 96,
+            //                                         PixelFormats.Bgra32, null, playerImage,
+            //                                         colorFrameStride);
+            return temp;
+        }
+
+        private int generateHeightAdjustValue()
+        {
+            Random rTemp;
+            rTemp = new Random();
+            return rTemp.Next(-20, 20);
         }
         
         //处理数据并保存

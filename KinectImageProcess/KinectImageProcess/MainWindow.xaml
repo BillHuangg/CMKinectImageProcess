@@ -5,9 +5,11 @@
     <Viewbox Stretch="Fill">
         <Grid>
             <Canvas Name="ImageLayer" Height="1080" Width="1920" Background="Black">
-                <Image Width="640" Height="480" HorizontalAlignment="Left" Name="GreenScreenImage" Stretch="Fill" VerticalAlignment="Top"  Canvas.Left="20" Canvas.Top="20" />
+                <Image Width="640" Height="480" HorizontalAlignment="Left" Name="GreenScreenImage" Stretch="Fill" VerticalAlignment="Top"  Canvas.Left="20" Canvas.Top="20" Visibility="Hidden"/>
             </Canvas>
-            <Image Name="PNGPlayerElement" Stretch="Fill" Height="1080" Width="1920"></Image>
+            <Canvas Height="1080" Width="1920" >
+            <Image Name="PNGPlayerElement" Stretch="Fill" Height="1080" Width="1920" Canvas.Top="100"></Image>
+            </Canvas>
         </Grid>
     </Viewbox>
 </Window>

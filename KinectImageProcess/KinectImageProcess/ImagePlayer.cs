@@ -22,7 +22,7 @@ namespace KinectImageProcess
     {
         private Timer parentTimer;
         delegate void UpdateTimer();
-        private int intervalTime = 50;      
+        private int intervalTime = 50;
 
         private MainWindow _windowUI;
 
@@ -31,9 +31,13 @@ namespace KinectImageProcess
         private int _startNum;
         private int _imageCount;
         private int currentImageNum;
+        private bool isFadeInAndOut;
+        private float fadingRate;
+        private int FadeInFrame;
+        private int FadeOutFrame;
 
         private Image imagePlayerElement;
-        public ImagePlayer(MainWindow window, string filePath, string fileName, int startNum, int imageCount,int interval=50,Image imageElement=null)
+        public ImagePlayer(MainWindow window, string filePath, string fileName, int startNum, int imageCount, bool isFading, float _fadingRate, int interval = 50, Image imageElement = null)
         {
             _windowUI = window;
             _fileName = fileName;
@@ -43,11 +47,34 @@ namespace KinectImageProcess
             currentImageNum = startNum;
             intervalTime = 50;
 
-            imagePlayerElement=imageElement;
+            imagePlayerElement = imageElement;
+
+            isFadeInAndOut = isFading;
+            fadingRate = _fadingRate;
+            if (isFadeInAndOut)
+            {
+                CalculateFadeFrame();
+            }
         }
         ~ImagePlayer()
         {
             parentTimer.Dispose();
+        }
+        private void CalculateFadeFrame()
+        {
+            int frameNum = (int)(1 / fadingRate);
+
+            if (2 * frameNum >= _imageCount)
+            {
+                FadeInFrame = _imageCount / 2;
+                FadeOutFrame = _imageCount - FadeInFrame;
+            }
+            else
+            {
+                FadeInFrame = frameNum;
+                FadeOutFrame = _imageCount - frameNum;
+            }
+
         }
         public void Play()
         {
@@ -74,19 +101,31 @@ namespace KinectImageProcess
                 //区分使用新建element或是预先于xaml设定好的
                 if (imagePlayerElement == null)
                 {
-                    _windowUI.PNGPlayerElement.Source = new BitmapImage(uri);
-                }
-                else
-                {
-                    imagePlayerElement.Source = new BitmapImage(uri);
+                    imagePlayerElement = _windowUI.PNGPlayerElement;
+
                 }
 
+                imagePlayerElement.Source = new BitmapImage(uri);
+
+                if (isFadeInAndOut)
+                {
+                    if (currentImageNum >= 0 && currentImageNum <= FadeInFrame)
+                    {
+                        imagePlayerElement.Opacity = currentImageNum * fadingRate;
+                    }
+                    else if (currentImageNum >= FadeOutFrame && currentImageNum < _imageCount)
+                    {
+                        imagePlayerElement.Opacity = 1 - (currentImageNum - FadeOutFrame) * fadingRate;
+                    }
+                }
                 currentImageNum++;
             }
-            catch(Exception e)
-            {}
+            catch (Exception e)
+            {
+
+            }
             //reset
-            if (currentImageNum >= _imageCount+_startNum)
+            if (currentImageNum >= _imageCount + _startNum)
             {
                 currentImageNum = _startNum;
             }

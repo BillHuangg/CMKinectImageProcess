@@ -25,7 +25,7 @@ namespace KinectImageProcess
     {
         private Timer parentTimer;
         delegate void UpdateTimer();
-        private int intervalTime = 10000;    //3s 
+        private int intervalTime = 5000;    //3s 
 
         private MainWindow _windowUI;
 
